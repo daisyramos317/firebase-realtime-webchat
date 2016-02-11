@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Firebase Chat</title>
+  <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+  <script src='https://cdn.firebase.com/js/client/2.2.7/firebase.js'></script>
+  <style>
+    .msg {
+      margin: 10px 0;
+      padding: 10px;
+      width: 400px;
+      background-color: #efefef;
+    }
+    .me {
+      background-color: #cdcdcd;
+      text-align: right;
+     }
+  </style>
+</head>
+<body>
+  <button id="login">Login with Google</button><br/>
+  <input id="text" type="text" placeholder="Message"><br/>
+  <button id="post" disabled="true">Post</button><br/>
+  <div id="results"></div>
+  <script>
+  var myFirebase = new Firebase('https://realtime-web-chat.firebaseio.com/');
+  var username = null;
+  var loginButton = document.querySelector('#login');
+  var textInput = document.querySelector('#text');
+  var postButton = document.querySelector('#post');
+
+    postButton.addEventListener("click", function() {
+      var msgUser = username;
+      var msgText = textInput.value;
+      myFirebase.push({username:msgUser, text:msgText});
+      textInput.value = "";
+    });
+
+myFirebase.onAuth(function(authData) {
+      if (authData) { // user has authenticated
+myFirebase.on('child_added', function(snapshot) {
+      var msg = snapshot.val();
+      var msgUser = authData.google.displayName;
+      var msgUsernameElement = document.createElement("b");
+      msgUsernameElement.textContent = msg.username;
+      
+      var msgTextElement = document.createElement("p");
+      msgTextElement.textContent = msg.text;
+
+      var msgElement = document.createElement("div");
+      msgElement.appendChild(msgUsernameElement);
+      msgElement.appendChild(msgTextElement); 
+      document.getElementById("results").appendChild(msgElement);
+      msgElement.className = "msg" + (msg.username == msgUser ? ' me' : '');      
+    });
+  }
+ });
+loginButton.addEventListener("click", function() {
+      myFirebase.authWithOAuthPopup("google", function(error, authData) {
+        if (!error) {
+          username = authData.google.displayName;
+          postButton.textContent = "Post as " + username;
+          postButton.disabled = false;
+          loginButton.disabled = true;
+        }
+      }, {remember: "none"}); // will end authentication on page close/reload
+    });
+
+  </script>
+</body>
+</html>
+

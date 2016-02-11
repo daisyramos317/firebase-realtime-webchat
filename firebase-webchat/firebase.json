@@ -1,0 +1,9 @@
+{
+  "firebase": "realtime-web-chat",
+  "public": "public",
+  "ignore": [
+    "firebase.json",
+    "**/.*",
+    "**/node_modules/**"
+  ]
+}
